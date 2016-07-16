@@ -21,12 +21,7 @@ static __device__ __forceinline__ uint2 cuda_swap(uint2 v) {
 	v.y = t;
 	return v;
 }
-static __device__ __forceinline__ uint2 eorswap32(uint2 u, uint2 v) {
-	uint2 result;
-	result.y = u.x ^ v.x;
-	result.x = u.y ^ v.y;
-	return result;
-}
+
 
 __constant__ uint2 c_512_u2[16] =
 {

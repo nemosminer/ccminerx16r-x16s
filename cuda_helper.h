@@ -96,7 +96,6 @@ __device__ __forceinline__ uint64_t REPLACE_LODWORD(const uint64_t &x, const uin
 	return (x & 0xFFFFFFFF00000000ULL) | ((uint64_t)y);
 }
 
-// Endian Drehung für 32 Bit Typen
 #ifdef __CUDA_ARCH__
 __device__ __forceinline__ uint32_t cuda_swab32(uint32_t x)
 {
@@ -471,6 +470,15 @@ static __host__ __device__ __forceinline__ uint64_t devectorize(uint2 v) {
 #endif
 }
 
+static __device__ __forceinline__ uint2 eorswap32(uint2 u, uint2 v)
+{
+	uint2 result;
+	result.y = u.x ^ v.x;
+	result.x = u.y ^ v.y;
+	return result;
+}
+
+
 /**
  * uint2 direct ops by c++ operator definitions
  */
@@ -561,11 +569,9 @@ uint2 ROR2(const uint2 a, const int offset)
 	return result;
 }
 
-__device__ __forceinline__
-uint2 ROL2(const uint2 a, const int offset)
-{
+#if  __CUDA_ARCH__ >= 350
+__inline__ __device__ uint2 ROL2(const uint2 a, const int offset) {
 	uint2 result;
-#if __CUDA_ARCH__ > 300
 	if (offset >= 32) {
 		asm("shf.l.wrap.b32 %0, %1, %2, %3;" : "=r"(result.x) : "r"(a.x), "r"(a.y), "r"(offset));
 		asm("shf.l.wrap.b32 %0, %1, %2, %3;" : "=r"(result.y) : "r"(a.y), "r"(a.x), "r"(offset));
@@ -574,14 +580,20 @@ uint2 ROL2(const uint2 a, const int offset)
 		asm("shf.l.wrap.b32 %0, %1, %2, %3;" : "=r"(result.x) : "r"(a.y), "r"(a.x), "r"(offset));
 		asm("shf.l.wrap.b32 %0, %1, %2, %3;" : "=r"(result.y) : "r"(a.x), "r"(a.y), "r"(offset));
 	}
-#else
-	if (!offset)
-		result = a;
-	else
-		result = ROR2(a, 64 - offset);
-#endif
 	return result;
 }
+#else
+__inline__ __device__ uint2 ROL2(const uint2 v, const int n)
+{
+	uint2 result;
+	if (!n)
+		result = v;
+	else
+		result = ROR2(v, 64 - n);
+
+	return result;
+}
+#endif
 
 __device__ __forceinline__
 uint2 SWAPUINT2(uint2 value)

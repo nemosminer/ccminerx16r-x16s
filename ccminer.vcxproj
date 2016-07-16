@@ -41,10 +41,7 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings" Condition="'$(Platform)'=='Win32'">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 6.5.props" />
-  </ImportGroup>
-  <ImportGroup Label="ExtensionSettings" Condition="'$(Platform)'=='x64'">
+  <ImportGroup Label="ExtensionSettings">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 7.5.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -83,10 +80,10 @@
     <CudaCompile>
       <CInterleavedPTX>false</CInterleavedPTX>
       <GenerateLineInfo>true</GenerateLineInfo>
-      <MaxRegCount>80</MaxRegCount>
+      <MaxRegCount>255</MaxRegCount>
       <PtxAsOptionV>true</PtxAsOptionV>
       <Keep>true</Keep>
-      <CodeGeneration>compute_50,sm_50</CodeGeneration>
+      <CodeGeneration>compute_50,sm_50;compute_52,sm_52;compute_35,sm_35;compute_30,sm_30;compute_20,sm_20</CodeGeneration>
       <Include>$(NVTOOLSEXT_PATH)\include;..\..\..\Common\C99</Include>
     </CudaCompile>
   </ItemDefinitionGroup>
@@ -115,15 +112,16 @@
     <CudaCompile>
       <CInterleavedPTX>false</CInterleavedPTX>
       <GenerateLineInfo>true</GenerateLineInfo>
-      <MaxRegCount>80</MaxRegCount>
+      <MaxRegCount>255</MaxRegCount>
       <PtxAsOptionV>true</PtxAsOptionV>
       <Keep>true</Keep>
-      <CodeGeneration>compute_50,sm_50</CodeGeneration>
+      <CodeGeneration>compute_50,sm_50;compute_52,sm_52;compute_35,sm_35;compute_30,sm_30;compute_20,sm_20</CodeGeneration>
       <Include>$(NVTOOLSEXT_PATH)\include;..\..\..\Common\C99</Include>
       <TargetMachinePlatform>64</TargetMachinePlatform>
     </CudaCompile>
     <CudaLink>
       <PerformDeviceLink>false</PerformDeviceLink>
+      <Optimization>O3</Optimization>
     </CudaLink>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -158,16 +156,16 @@
     </Link>
     <CudaCompile>
       <CInterleavedPTX>false</CInterleavedPTX>
-      <MaxRegCount>80</MaxRegCount>
+      <MaxRegCount>255</MaxRegCount>
       <PtxAsOptionV>true</PtxAsOptionV>
       <Keep>true</Keep>
-      <CodeGeneration>compute_50,sm_50;compute_52,sm_52;compute_30,sm_30;compute_20,sm_21</CodeGeneration>
+      <CodeGeneration>compute_50,sm_50;compute_52,sm_52;compute_35,sm_35;compute_30,sm_30;compute_20,sm_20</CodeGeneration>
       <AdditionalOptions>--ptxas-options="-O2" %(AdditionalOptions)</AdditionalOptions>
-      <Optimization>O2</Optimization>
+      <Optimization>O3</Optimization>
     </CudaCompile>
     <CudaLink>
       <GPUDebugInfo>false</GPUDebugInfo>
-      <Optimization>O3</Optimization>
+      <Optimization>O2</Optimization>
     </CudaLink>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -201,10 +199,10 @@
     </Link>
     <CudaCompile>
       <CInterleavedPTX>false</CInterleavedPTX>
-      <MaxRegCount>80</MaxRegCount>
+      <MaxRegCount>255</MaxRegCount>
       <PtxAsOptionV>true</PtxAsOptionV>
       <Keep>true</Keep>
-      <CodeGeneration>compute_52,sm_52;compute_50,sm_50;compute_35,sm_35;compute_30,sm_30;compute_20,sm_21</CodeGeneration>
+      <CodeGeneration>compute_50,sm_50;compute_52,sm_52;compute_35,sm_35;compute_30,sm_30;compute_20,sm_20</CodeGeneration>
       <Include>$(NVTOOLSEXT_PATH)\include;..\..\..\Common\C99</Include>
       <Optimization>O3</Optimization>
       <TargetMachinePlatform>64</TargetMachinePlatform>
@@ -250,6 +248,7 @@
     <ClCompile Include="lyra2\Lyra2.c" />
     <ClCompile Include="lyra2\Sponge.c" />
     <ClInclude Include="lyra2\cuda_lyra2_sm2.cuh" />
+    <ClInclude Include="lyra2\cuda_lyra2_sm5.cuh" />
     <ClInclude Include="neoscrypt\neoscrypt.h" />
     <ClCompile Include="neoscrypt\neoscrypt.cpp" />
     <ClCompile Include="neoscrypt\neoscrypt-cpu.c" />
@@ -347,7 +346,6 @@
     <ClInclude Include="uint256.h" />
     <ClInclude Include="lyra2\Lyra2.h" />
     <ClInclude Include="lyra2\Sponge.h" />
-    <ClInclude Include="lyra2\cuda_lyra2v2_sm3.cuh" />
     <ClInclude Include="quark\groestl_transf_quad.h" />
     <ClInclude Include="quark\groestl_functions_quad.h" />
     <ClInclude Include="quark\cuda_quark.h" />
@@ -527,10 +525,7 @@
     <Text Include="README.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets" Condition="'$(Platform)'=='Win32'">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 6.5.targets" />
-  </ImportGroup>
-  <ImportGroup Label="ExtensionTargets" Condition="'$(Platform)'=='x64'">
+  <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 7.5.targets" />
   </ImportGroup>
   <!-- Copy the required dlls -->

@@ -437,9 +437,6 @@
     <ClInclude Include="bignum.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="lyra2\cuda_lyra2v2_sm3.cuh">
-      <Filter>Source Files\CUDA\lyra2</Filter>
-    </ClInclude>
     <ClInclude Include="lyra2\cuda_lyra2_sm2.cuh">
       <Filter>Source Files\CUDA\lyra2</Filter>
     </ClInclude>
@@ -454,6 +451,9 @@
     </ClInclude>
     <ClInclude Include="x11\cuda_x11_simd512_sm2.cuh">
       <Filter>Source Files\CUDA\x11</Filter>
+    </ClInclude>
+    <ClInclude Include="lyra2\cuda_lyra2_sm5.cuh">
+      <Filter>Source Files\CUDA\lyra2</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
