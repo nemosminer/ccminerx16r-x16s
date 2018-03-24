@@ -268,7 +268,6 @@ extern "C" int scanhash_x16r(int thr_id, struct work* work, uint32_t max_nonce, 
 		x11_luffa512_cpu_init(thr_id, throughput); // 64
 		x11_shavite512_cpu_init(thr_id, throughput);
 		x11_simd512_cpu_init(thr_id, throughput); // 64
-		x11_echo512_cpu_init(thr_id, throughput);
 		x16_echo512_cuda_init(thr_id, throughput);
 		x13_hamsi512_cpu_init(thr_id, throughput);
 		x13_fugue512_cpu_init(thr_id, throughput);
@@ -303,7 +302,7 @@ extern "C" int scanhash_x16r(int thr_id, struct work* work, uint32_t max_nonce, 
 		getAlgoString(&endiandata[1], hashOrder);
 		s_ntime = ntime;
 		s_implemented = true;
-		if (opt_debug && !thr_id) applog(LOG_DEBUG, "hash order %s (%08x)", hashOrder, ntime);
+		if (!thr_id) applog(LOG_INFO, "hash order %s (%08x)", hashOrder, ntime);
 	}
 
 	if (!s_implemented) {
@@ -495,7 +494,7 @@ extern "C" int scanhash_x16r(int thr_id, struct work* work, uint32_t max_nonce, 
 				TRACE("simd   :");
 				break;
 			case ECHO:
-				x11_echo512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
+				x11_echo512_cpu_hash_64_alexis(thr_id, throughput, d_hash[thr_id]); order++;
 				TRACE("echo   :");
 				break;
 			case HAMSI:
