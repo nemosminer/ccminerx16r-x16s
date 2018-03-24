@@ -67,14 +67,14 @@ ccminer_SOURCES	= elist.h miner.h compat.h \
 			  sph/ripemd.c sph/sph_sha2.c \
 			  polytimos.cu \
 			  lbry/lbry.cu lbry/cuda_sha256_lbry.cu lbry/cuda_sha512_lbry.cu lbry/cuda_lbry_merged.cu \
-			  qubit/qubit.cu qubit/qubit_luffa512.cu qubit/deep.cu qubit/luffa.cu \
+			  qubit/qubit.cu qubit/qubit_luffa512.cu qubit/qubit_luffa512_alexis.cu qubit/deep.cu qubit/luffa.cu \
 			  tribus/tribus.cu tribus/cuda_echo512_final.cu \
 			  x11/x11.cu x11/fresh.cu x11/cuda_x11_luffa512.cu x11/cuda_x11_cubehash512.cu \
-			  x11/cuda_x11_shavite512.cu x11/cuda_x11_simd512.cu x11/cuda_x11_echo.cu x11/cuda_x11_echo_alexis.cu \
+			  x11/cuda_x11_shavite512.cu x11/cuda_x11_shavite512_alexis.cu x11/cuda_x11_simd512.cu x11/cuda_x11_echo.cu x11/cuda_x11_echo_alexis.cu \
 			  x11/cuda_x11_luffa512_Cubehash.cu x11/x11evo.cu x11/timetravel.cu x11/bitcore.cu \
-			  x13/x13.cu x13/cuda_x13_hamsi512.cu x13/cuda_x13_fugue512.cu \
+			  x13/x13.cu x13/cuda_x13_hamsi512.cu x13/cuda_x13_fugue512.cu x13/cuda_x13_fugue512_alexis.cu \
 			  x13/hsr.cu x13/cuda_hsr_sm3.cu x13/sm3.c \
-			  x15/x14.cu x15/x15.cu x15/cuda_x14_shabal512.cu x15/cuda_x15_whirlpool.cu \
+			  x15/x14.cu x15/x15.cu x15/cuda_x14_shabal512.cu x15/cuda_x14_shabal512_alexis.cu x15/cuda_x15_whirlpool.cu \
 			  x15/whirlpool.cu x15/cuda_x15_whirlpool_sm3.cu \
 			  x16r/x16r.cu x16r/cuda_x16_echo512.cu x16r/cuda_x16_fugue512.cu \
 			  x16r/cuda_x16_shabal512.cu x16r/cuda_x16_simd512_80.cu \
