@@ -247,7 +247,7 @@ void quark_keccak512_cpu_hash_64(int thr_id, uint32_t threads, uint32_t startNou
 	else
 		quark_keccak512_gpu_hash_64_v30<<<grid, block>>>(threads, startNounce, (uint64_t*)d_hash, d_nonceVector);
 
-	MyStreamSynchronize(NULL, order, thr_id);
+	//MyStreamSynchronize(NULL, order, thr_id);
 }
 
 void jackpot_keccak512_cpu_init(int thr_id, uint32_t threads);

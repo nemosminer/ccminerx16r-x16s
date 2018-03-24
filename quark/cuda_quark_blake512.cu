@@ -248,7 +248,7 @@ void quark_blake512_cpu_hash_64(int thr_id, uint32_t threads, uint32_t startNoun
 		dim3 block(threadsperblock);
 		quark_blake512_gpu_hash_64<<<grid, block>>>(threads, startNounce, d_nonceVector, (uint64_t*)d_outputHash);
 	}
-	MyStreamSynchronize(NULL, order, thr_id);
+	//MyStreamSynchronize(NULL, order, thr_id);
 }
 
 __host__

@@ -530,7 +530,7 @@ void jackpot_keccak512_cpu_hash(int thr_id, uint32_t threads, uint32_t startNoun
 	size_t shared_size = 0;
 
 	jackpot_keccak512_gpu_hash<<<grid, block, shared_size>>>(threads, startNounce, (uint64_t*)d_hash);
-	MyStreamSynchronize(NULL, order, thr_id);
+	//MyStreamSynchronize(NULL, order, thr_id);
 }
 
 
@@ -591,7 +591,7 @@ void zr5_keccak512_cpu_hash(int thr_id, uint32_t threads, uint32_t startNounce, 
 	dim3 block(threadsperblock);
 
 	zr5_keccak512_gpu_hash<<<grid, block>>>(threads, startNounce, (uint64_t*)d_hash);
-	MyStreamSynchronize(NULL, 0, thr_id);
+	//MyStreamSynchronize(NULL, 0, thr_id);
 }
 
 /* required for the second hash part of zr5 */
@@ -662,5 +662,5 @@ void zr5_keccak512_cpu_hash_pok(int thr_id, uint32_t threads, uint32_t startNoun
 
 	cudaMemcpyToSymbol(d_OriginalData, pdata, sizeof(d_OriginalData), 0, cudaMemcpyHostToDevice);
 	zr5_keccak512_gpu_hash_pok<<<grid, block>>>(threads, startNounce, d_hash, d_poks, version);
-	MyStreamSynchronize(NULL, 10, thr_id);
+	//MyStreamSynchronize(NULL, 10, thr_id);
 }
