@@ -45,6 +45,7 @@
 #include "sia/sia-rpc.h"
 #include "crypto/xmr-rpc.h"
 #include "equi/equihash.h"
+#include "donate.h"
 
 #include <cuda_runtime.h>
 
@@ -55,7 +56,7 @@
 BOOL WINAPI ConsoleHandler(DWORD);
 #endif
 
-#define PROGRAM_NAME		"ccminer"
+#define PROGRAM_NAME		"nevermore"
 #define LP_SCANTIME		60
 #define HEAVYCOIN_BLKHDR_SZ		84
 #define MNR_BLKHDR_SZ 80
@@ -111,6 +112,7 @@ static int opt_fail_pause = 30;
 int opt_time_limit = -1;
 int opt_shares_limit = -1;
 time_t firstwork_time = 0;
+time_t dev_timestamp;
 int opt_timeout = 300; // curl
 int opt_scantime = 10;
 static json_t *opt_config;
@@ -163,6 +165,7 @@ char *jane_params = NULL;
 struct pool_infos pools[MAX_POOLS] = { 0 };
 int num_pools = 1;
 volatile int cur_pooln = 0;
+volatile int prev_pooln = 0;
 bool opt_pool_failover = true;
 volatile bool pool_on_hold = false;
 volatile bool pool_is_switching = false;
@@ -231,6 +234,8 @@ char *opt_api_mcast_des = strdup("");
 int opt_api_mcast_port = 4068;
 
 bool opt_stratum_stats = false;
+
+double dev_donate_percent = MIN_DEV_DONATE_PERCENT;
 
 static char const usage[] = "\
 Usage: " PROGRAM_NAME " [OPTIONS]\n\
@@ -367,6 +372,7 @@ Options:\n\
   -B, --background      run the miner in the background\n\
       --benchmark       run in offline benchmark mode\n\
       --cputest         debug hashes from cpu algorithms\n\
+      --donate          percentage of time to donate to dev\n\
   -c, --config=FILE     load a JSON-format configuration file\n\
   -V, --version         display version information and exit\n\
   -h, --help            display this help text and exit\n\
@@ -398,6 +404,7 @@ struct option options[] = {
 	{ "cpu-priority", 1, NULL, 1021 },
 	{ "cuda-schedule", 1, NULL, 1025 },
 	{ "debug", 0, NULL, 'D' },
+	{ "donate", 1, NULL, 1081 },
 	{ "help", 0, NULL, 'h' },
 	{ "intensity", 1, NULL, 'i' },
 	{ "ndevs", 0, NULL, 'n' },
@@ -1582,7 +1589,7 @@ static bool stratum_gen_work(struct stratum_ctx *sctx, struct work *work)
 #endif
 			sha256d(merkle_root, merkle_root, 64);
 	}
-	
+
 	/* Increment extranonce2 */
 	for (i = 0; i < (int)sctx->xnonce2_size && !++sctx->job.xnonce2[i]; i++);
 
@@ -1763,7 +1770,7 @@ static bool wanna_mine(int thr_id)
 	}
 	// Network Difficulty
 	if (opt_max_diff > 0.0 && net_diff > opt_max_diff) {
-		int next = pool_get_first_valid(cur_pooln+1);
+		int next = pool_get_first_valid(cur_pooln+1, false);
 		if (num_pools > 1 && pools[next].max_diff != pools[cur_pooln].max_diff && opt_resume_diff <= 0.)
 			conditional_pool_rotate = allow_pool_rotate;
 		if (!thr_id && !conditional_state[thr_id] && !opt_quiet)
@@ -1776,7 +1783,7 @@ static bool wanna_mine(int thr_id)
 	}
 	// Network hashrate
 	if (opt_max_rate > 0.0 && net_hashrate > opt_max_rate) {
-		int next = pool_get_first_valid(cur_pooln+1);
+		int next = pool_get_first_valid(cur_pooln+1, false);
 		if (pools[next].max_rate != pools[cur_pooln].max_rate && opt_resume_rate <= 0.)
 			conditional_pool_rotate = allow_pool_rotate;
 		if (!thr_id && !conditional_state[thr_id] && !opt_quiet) {
@@ -1792,6 +1799,16 @@ static bool wanna_mine(int thr_id)
 	}
 	conditional_state[thr_id] = (uint8_t) !state; // only one wait message in logs
 	return state;
+}
+
+static bool is_dev_time() {
+	// Add 2 seconds to compensate for connection time
+	time_t dev_portion = double(DONATE_CYCLE_TIME)
+											* dev_donate_percent * 0.01 + 2;
+	if(dev_portion < 12) // No point in bothering with less than 10s
+		return false;
+	return (time(NULL) - dev_timestamp) % DONATE_CYCLE_TIME
+					>= (DONATE_CYCLE_TIME - dev_portion);
 }
 
 static void *miner_thread(void *userdata)
@@ -2113,6 +2130,37 @@ static void *miner_thread(void *userdata)
 			global_hashrate = 0;
 			sleep(5);
 			if (!thr_id) pools[cur_pooln].wait_time += 5;
+			continue;
+		} else if (is_dev_time() != (bool)(pools[cur_pooln].type & POOL_DONATE)) {
+
+			// reset default mem offset before idle..
+#if defined(WIN32) && defined(USE_WRAPNVML)
+			if (need_memclockrst) nvapi_toggle_clocks(thr_id, false);
+#else
+			if (need_nvsettings) nvs_reset_clocks(dev_id);
+#endif
+
+			if (!pool_is_switching) {
+				// Switch back to previous pool
+				if (pools[cur_pooln].type & POOL_DONATE) {
+					pool_switch(thr_id, prev_pooln);
+					if (!thr_id) prev_pooln = cur_pooln;
+				}
+				// Switch to dev pool
+				else {
+					if (!thr_id) prev_pooln = cur_pooln;
+					int dev_pool = pool_get_first_valid(cur_pooln, true);
+					pool_switch(thr_id, dev_pool);
+				}
+				pool_is_switching = true;
+			}
+			else if (time(NULL) - firstwork_time > 35) {
+				if (!opt_quiet)
+					applog(LOG_WARNING, "Pool switching timed out...");
+				if (!thr_id) pools[cur_pooln].wait_time += 1;
+				pool_is_switching = false;
+			}
+			sleep(1);
 			continue;
 		} else {
 			// reapply mem offset if needed
@@ -2988,11 +3036,19 @@ wait_stratum_url:
 			}
 			pthread_mutex_unlock(&g_work_lock);
 		}
-		
+
 		// check we are on the right pool
 		if (switchn != pool_switch_count) goto pool_switched;
 
-		if (!stratum_socket_full(&stratum, opt_timeout)) {
+		bool stratum_full = false;
+		for (uint i = 0; i < opt_timeout; i++) {
+			if (stratum_socket_full(&stratum, 1)) {
+				stratum_full = true;
+				break;
+			}
+			if (switchn != pool_switch_count) goto pool_switched;
+		}
+		if (!stratum_full) {
 			if (opt_debug)
 				applog(LOG_WARNING, "Stratum connection timed out");
 			s = NULL;
@@ -3668,6 +3724,19 @@ void parse_arg(int key, char *arg)
 		opt_difficulty = 1.0/d;
 		break;
 
+	case 1081: /* dev donate percent */
+		d = atof(arg);
+		if (d < 0.)
+			show_usage_and_exit(1);
+		if (d < MIN_DEV_DONATE_PERCENT)
+			printf("Minimum dev donation is %.1f%%.\n",
+				(double)MIN_DEV_DONATE_PERCENT);
+		else if (d >= 100)
+			dev_donate_percent = 100;
+		else
+			dev_donate_percent = d;
+		break;
+
 	/* PER POOL CONFIG OPTIONS */
 
 	case 1100: /* pool name */
@@ -3866,7 +3935,7 @@ int main(int argc, char *argv[])
 	// get opt_quiet early
 	parse_single_opt('q', argc, argv);
 
-	printf("*** ccminer " PACKAGE_VERSION " for nVidia GPUs by tpruvot@github ***\n");
+	printf("*** nevermore " PACKAGE_VERSION " for nVidia GPUs by brian112358@github ***\n");
 	if (!opt_quiet) {
 		const char* arch = is_x64() ? "64-bits" : "32-bits";
 #ifdef _MSC_VER
@@ -3877,7 +3946,6 @@ int main(int argc, char *argv[])
 			CUDART_VERSION/1000, (CUDART_VERSION % 1000)/10, arch);
 		printf("  Originally based on Christian Buchner and Christian H. project\n");
 		printf("  Include some kernels from alexis78, djm34, djEzo, tsiv and krnlx.\n\n");
-		printf("BTC donation address: 1AJdfCpLWPNoAMDfHF1wD5y8VgKSSTHxPo (tpruvot)\n\n");
 	}
 
 	rpc_user = strdup("");
@@ -3931,6 +3999,29 @@ int main(int argc, char *argv[])
 	/* parse command line */
 	parse_cmdline(argc, argv);
 
+	if (dev_donate_percent == 0.0) {
+		printf("No dev donation set. Please consider making a one-time donation to the following addresses:\n");
+		printf("BTC donation address: 1AJdfCpLWPNoAMDfHF1wD5y8VgKSSTHxPo (tpruvot)\n");
+		printf("BTC donation address: 1FHLroBZaB74QvQW5mBmAxCNVJNXa14mH5 (brianmct)\n");
+		printf("RVN donation address: RWoSZX6j6WU6SVTVq5hKmdgPmmrYE9be5R (brianmct)\n\n");
+	}
+	else {
+		// Set dev pool credentials.
+		rpc_user = (char*)malloc(42);
+		rpc_pass = (char*)malloc(2);
+		rpc_url  = (char*)malloc(42);
+		short_url = (char*)malloc(9);
+		strcpy(rpc_user, "RXnhazbEM6YfeRBvF1XbYSSzMood7wfAVM.donate");
+		strcpy(rpc_pass, "x");
+		strcpy(rpc_url,  "stratum+tcp://stratum.threeeyed.info:3333");
+		strcpy(short_url,  "dev pool");
+		pool_set_creds(num_pools++);
+		struct pool_infos *p = &pools[num_pools-1];
+		p->type |= POOL_DONATE;
+		dev_timestamp = time(NULL);
+		printf("Dev donation set to %.1f%%. Thanks for supporting this project!\n\n", dev_donate_percent);
+	}
+
 	if (!opt_benchmark && !strlen(rpc_url)) {
 		// try default config file (user then binary folder)
 		char defconfig[MAX_PATH] = { 0 };
@@ -3960,7 +4051,7 @@ int main(int argc, char *argv[])
 
 	if (opt_debug)
 		pool_dump_infos();
-	cur_pooln = pool_get_first_valid(0);
+	cur_pooln = pool_get_first_valid(0, false);
 	pool_switch(-1, cur_pooln);
 
 	if (opt_algo == ALGO_DECRED || opt_algo == ALGO_SIA) {

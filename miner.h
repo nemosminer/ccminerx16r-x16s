@@ -752,6 +752,7 @@ struct pool_infos {
 #define POOL_GETWORK  1
 #define POOL_STRATUM  2
 #define POOL_LONGPOLL 4
+#define POOL_DONATE		8
 	uint8_t type;
 #define POOL_ST_DEFINED 1
 #define POOL_ST_VALID 2
@@ -801,7 +802,7 @@ void pool_set_attr(int pooln, const char* key, char* arg);
 bool pool_switch_url(char *params);
 bool pool_switch(int thr_id, int pooln);
 bool pool_switch_next(int thr_id);
-int pool_get_first_valid(int startfrom);
+int pool_get_first_valid(int startfrom, bool donate);
 bool parse_pool_array(json_t *obj);
 void pool_dump_infos(void);
 
