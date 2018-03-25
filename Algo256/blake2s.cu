@@ -34,18 +34,6 @@ uint32_t ROL16(const uint32_t a) {
 #define ROL16(u) (u << 16)
 #endif
 
-__device__ __forceinline__
-uint32_t xor3x(uint32_t a, uint32_t b, uint32_t c)
-{
-	uint32_t result;
-#if __CUDA_ARCH__ >= 500 && CUDA_VERSION >= 7050
-	asm ("lop3.b32 %0, %1, %2, %3, 0x96;" : "=r"(result) : "r"(a), "r"(b),"r"(c)); //0x96 = 0xF0 ^ 0xCC ^ 0xAA
-#else
-	result = a^b^c;
-#endif
-	return result;
-}
-
 static const uint32_t blake2s_IV[8] = {
 	0x6A09E667UL, 0xBB67AE85UL, 0x3C6EF372UL, 0xA54FF53AUL,
 	0x510E527FUL, 0x9B05688CUL, 0x1F83D9ABUL, 0x5BE0CD19UL
@@ -562,4 +550,3 @@ extern "C" void free_blake2s(int thr_id)
 
 	cudaDeviceSynchronize();
 }
-

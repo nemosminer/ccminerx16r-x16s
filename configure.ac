@@ -1,4 +1,4 @@
-AC_INIT([ccminer], [2.2.5], [], [ccminer], [http://github.com/tpruvot/ccminer])
+AC_INIT([nevermore], [0.1], [], [nevermore], [https://github.com/brian112358/nevermore-miner])
 
 AC_PREREQ([2.59c])
 AC_CANONICAL_SYSTEM
@@ -157,6 +157,6 @@ AC_SUBST(CUDA_LIBS)
 AC_SUBST(CUDA_LDFLAGS)
 AC_SUBST(NVCC)
 
-AC_SUBST(OPENMP_CFLAGS) 
+AC_SUBST(OPENMP_CFLAGS)
 
 AC_OUTPUT

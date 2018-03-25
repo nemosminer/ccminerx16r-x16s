@@ -102,7 +102,7 @@ __device__ __forceinline__ uint64_t REPLACE_LODWORD(const uint64_t &x, const uin
 	return (x & 0xFFFFFFFF00000000ULL) | ((uint64_t)y);
 }
 
-// Endian Drehung für 32 Bit Typen
+// Endian Drehung fï¿½r 32 Bit Typen
 #ifdef __CUDA_ARCH__
 __device__ __forceinline__ uint32_t cuda_swab32(uint32_t x)
 {
@@ -681,14 +681,14 @@ uint32_t xor3x(uint32_t a,uint32_t b,uint32_t c){
 }
 
 __device__ __forceinline__
-uint2 xor3x(const uint2 a,const uint2 b,const uint2 c){
+uint2 xor3x(const uint2 a,const uint2 b,const uint2 c) {
 	uint2 result;
-	#if __CUDA_ARCH__ >= 500 && CUDA_VERSION >= 7050
-			asm ("lop3.b32 %0, %1, %2, %3, 0x96;" : "=r"(result.x) : "r"(a.x), "r"(b.x),"r"(c.x));
-			asm ("lop3.b32 %0, %1, %2, %3, 0x96;" : "=r"(result.y) : "r"(a.y), "r"(b.y),"r"(c.y));
-	#else
-			result = a^b^c;
-	#endif
+#if __CUDA_ARCH__ >= 500 && CUDA_VERSION >= 7050
+	asm ("lop3.b32 %0, %1, %2, %3, 0x96;" : "=r"(result.x) : "r"(a.x), "r"(b.x),"r"(c.x)); //0x96 = 0xF0 ^ 0xCC ^ 0xAA
+	asm ("lop3.b32 %0, %1, %2, %3, 0x96;" : "=r"(result.y) : "r"(a.y), "r"(b.y),"r"(c.y)); //0x96 = 0xF0 ^ 0xCC ^ 0xAA
+#else
+	result = a^b^c;
+#endif
 	return result;
 }
 
