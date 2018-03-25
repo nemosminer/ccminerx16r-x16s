@@ -155,7 +155,7 @@
       <MaxRegCount>80</MaxRegCount>
       <PtxAsOptionV>true</PtxAsOptionV>
       <Keep>true</Keep>
-      <CodeGeneration>compute_50,sm_50;compute_52,sm_52;compute_30,sm_30</CodeGeneration>
+      <CodeGeneration>compute_61,sm_61;compute_50,sm_50;compute_52,sm_52</CodeGeneration>
       <AdditionalOptions>--ptxas-options="-O2" --Wno-deprecated-gpu-targets %(AdditionalOptions)</AdditionalOptions>
       <Optimization>O2</Optimization>
     </CudaCompile>
@@ -198,7 +198,7 @@
       <MaxRegCount>80</MaxRegCount>
       <PtxAsOptionV>true</PtxAsOptionV>
       <Keep>true</Keep>
-      <CodeGeneration>compute_52,sm_52;compute_50,sm_50;compute_35,sm_35;compute_30,sm_30</CodeGeneration>
+      <CodeGeneration>compute_61,sm_61;compute_52,sm_52;compute_50,sm_50</CodeGeneration>
       <Include>$(NVTOOLSEXT_PATH)\include</Include>
       <Optimization>O3</Optimization>
       <TargetMachinePlatform>64</TargetMachinePlatform>
@@ -268,6 +268,7 @@
     <ClCompile Include="neoscrypt\neoscrypt.cpp" />
     <ClCompile Include="neoscrypt\neoscrypt-cpu.c" />
     <ClInclude Include="neoscrypt\cuda_vectors.h" />
+    <ClInclude Include="x11\cuda_x11_aes_alexis.cuh" />
     <ClInclude Include="x11\cuda_x11_simd512_sm2.cuh" />
     <ClInclude Include="x16r\cuda_x16r.h" />
     <CudaCompile Include="Algo256\bmw.cu" />
@@ -407,6 +408,7 @@
     <CudaCompile Include="cuda.cpp" />
     <CudaCompile Include="cuda_groestlcoin.cu" />
     <CudaCompile Include="cuda_myriadgroestl.cu" />
+    <CudaCompile Include="qubit\qubit_luffa512_alexis.cu" />
     <CudaCompile Include="scrypt\blake.cu" />
     <CudaCompile Include="scrypt\keccak.cu" />
     <CudaCompile Include="scrypt\sha256.cu" />
@@ -435,6 +437,10 @@
     <CudaCompile Include="sha256\sha256d.cu" />
     <CudaCompile Include="sha256\cuda_sha256t.cu" />
     <CudaCompile Include="sha256\sha256t.cu" />
+    <CudaCompile Include="x11\cuda_x11_echo_alexis.cu" />
+    <CudaCompile Include="x11\cuda_x11_shavite512_alexis.cu" />
+    <CudaCompile Include="x13\cuda_x13_fugue512_alexis.cu" />
+    <CudaCompile Include="x15\cuda_x14_shabal512_alexis.cu" />
     <CudaCompile Include="x15\cuda_x15_whirlpool_sm3.cu" />
     <CudaCompile Include="x16r\x16r.cu" />
     <CudaCompile Include="x16r\cuda_x16_echo512.cu" />
@@ -603,6 +609,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\ccminer.ico" />
+    <Image Include="res\icon2.ico" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="res\ccminer.rc" />

@@ -2,6 +2,7 @@
  * Copyright 2010 Jeff Garzik
  * Copyright 2012-2014 pooler
  * Copyright 2014-2017 tpruvot
+ * Copyright 2018      brianmct
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -3041,7 +3042,7 @@ wait_stratum_url:
 		if (switchn != pool_switch_count) goto pool_switched;
 
 		bool stratum_full = false;
-		for (uint i = 0; i < opt_timeout; i++) {
+		for (int i = 0; i < opt_timeout; i++) {
 			if (stratum_socket_full(&stratum, 1)) {
 				stratum_full = true;
 				break;

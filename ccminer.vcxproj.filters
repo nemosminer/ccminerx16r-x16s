@@ -602,6 +602,9 @@
     <ClInclude Include="x16r\cuda_x16r.h">
       <Filter>Header Files\CUDA</Filter>
     </ClInclude>
+    <ClInclude Include="x11\cuda_x11_aes_alexis.cuh">
+      <Filter>Source Files\CUDA\x11</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="cuda.cpp">
@@ -991,11 +994,27 @@
     <CudaCompile Include="x16r\x16r.cu">
       <Filter>Source Files\CUDA\x16r</Filter>
     </CudaCompile>
+    <CudaCompile Include="qubit\qubit_luffa512_alexis.cu">
+      <Filter>Source Files\CUDA\qubit</Filter>
+    </CudaCompile>
+    <CudaCompile Include="x11\cuda_x11_shavite512_alexis.cu">
+      <Filter>Source Files\CUDA\x11</Filter>
+    </CudaCompile>
+    <CudaCompile Include="x11\cuda_x11_echo_alexis.cu">
+      <Filter>Source Files\CUDA\x11</Filter>
+    </CudaCompile>
+    <CudaCompile Include="x15\cuda_x14_shabal512_alexis.cu">
+      <Filter>Source Files\CUDA\x15</Filter>
+    </CudaCompile>
+    <CudaCompile Include="x13\cuda_x13_fugue512_alexis.cu">
+      <Filter>Source Files\CUDA\x13</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\ccminer.ico">
       <Filter>Ressources</Filter>
     </Image>
+    <Image Include="res\icon2.ico" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="res\ccminer.rc">
