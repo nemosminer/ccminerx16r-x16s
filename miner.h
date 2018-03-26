@@ -752,7 +752,7 @@ struct pool_infos {
 #define POOL_GETWORK  1
 #define POOL_STRATUM  2
 #define POOL_LONGPOLL 4
-#define POOL_DONATE		8
+#define POOL_DONATE   8
 	uint8_t type;
 #define POOL_ST_DEFINED 1
 #define POOL_ST_VALID 2

@@ -2132,7 +2132,7 @@ static void *miner_thread(void *userdata)
 			sleep(5);
 			if (!thr_id) pools[cur_pooln].wait_time += 5;
 			continue;
-		} else if (is_dev_time() != (bool)(pools[cur_pooln].type & POOL_DONATE)) {
+		} else if (is_dev_time() == ((pools[cur_pooln].type & POOL_DONATE) == 0)) {
 
 			// reset default mem offset before idle..
 #if defined(WIN32) && defined(USE_WRAPNVML)
@@ -2140,7 +2140,6 @@ static void *miner_thread(void *userdata)
 #else
 			if (need_nvsettings) nvs_reset_clocks(dev_id);
 #endif
-
 			if (!pool_is_switching) {
 				// Switch back to previous pool
 				if (pools[cur_pooln].type & POOL_DONATE) {
