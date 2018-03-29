@@ -284,8 +284,8 @@ extern "C" int scanhash_x16r(int thr_id, struct work* work, uint32_t max_nonce, 
 
 	if (opt_benchmark) {
 		((uint32_t*)ptarget)[7] = 0x003f;
-		((uint32_t*)pdata)[1] = 0xDDDDDDDD;
-		((uint32_t*)pdata)[2] = 0xDDDDDDDD;
+		((uint32_t*)pdata)[1] = 0xEFCDAB89;
+		((uint32_t*)pdata)[2] = 0x67452301;
 		//((uint8_t*)pdata)[8] = 0x90; // hashOrder[0] = '9'; for simd 80 + blake512 64
 		//((uint8_t*)pdata)[8] = 0xA0; // hashOrder[0] = 'A'; for echo 80 + blake512 64
 		//((uint8_t*)pdata)[8] = 0xB0; // hashOrder[0] = 'B'; for hamsi 80 + blake512 64
