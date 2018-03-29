@@ -1,10 +1,35 @@
-# ccminer
+# Nevermore miner
 
-Based on Christian Buchner's &amp; Christian H.'s CUDA project, no more active on github since 2014.
+Quoth the Raven(coin), "Nevermore."
+
+An optimized fork of ccminer developed specially for x16r.
+
+Based on Christian Buchner's &amp; Christian H.'s CUDA project, no longer active on github since 2014.
 
 Check the [README.txt](README.txt) for the additions
 
-BTC donation address: 1AJdfCpLWPNoAMDfHF1wD5y8VgKSSTHxPo (tpruvot)
+
+## Donation Addresses
+
+Consider supporting the contributors to this miner by donating to the following addresses:
+
+brianmct / brian112358 (developer of Nevermore miner)
+
+- BTC: 1FHLroBZaB74QvQW5mBmAxCNVJNXa14mH5
+
+- RVN: RWoSZX6j6WU6SVTVq5hKmdgPmmrYE9be5R
+
+- ETH: 0x7255ba772ee18bdb8b9af0bdeae2e41f5874fb0b
+
+- DOGE: D7h81HeRVV3xPWL9CqCC2Z6AevG4gBdGxZ
+
+tpruvot (original x16r ccminer implementation):
+
+- BTC: 1AJdfCpLWPNoAMDfHF1wD5y8VgKSSTHxPo
+
+alexis78 (some optimized CUDA kernels for x16r)
+
+- RVN: RYKaoWqR5uahFioNvxabQtEBjNkBmRoRdg
 
 A part of the recent algos were originally written by [djm34](https://github.com/djm34) and [alexis78](https://github.com/alexis78)
 
