@@ -2,7 +2,7 @@
 	Based on Tanguy Pruvot's repo
 	Provos Alexis - 2016
 */
-#include "cuda_helper.h"
+#include "cuda_helper_alexis.h"
 #include "cuda_vectors_alexis.h"
 
 #define INTENSIVE_GMF
@@ -131,7 +131,7 @@ void x11_shavite512_gpu_hash_64_alexis(const uint32_t threads, uint64_t *g_hash)
 		*(uint2x4*)&r[ 0] = __ldg4((uint2x4*)&Hash[ 0]);
 		*(uint2x4*)&r[ 8] = __ldg4((uint2x4*)&Hash[ 4]);
 		__syncthreads();
-		
+
 		*(uint2x4*)&p[ 0] = *(uint2x4*)&state[ 0];
 		*(uint2x4*)&p[ 2] = *(uint2x4*)&state[ 8];
 		r[16] = 0x80; r[17] = 0; r[18] = 0; r[19] = 0;
@@ -231,8 +231,8 @@ void x11_shavite512_gpu_hash_64_alexis(const uint32_t threads, uint64_t *g_hash)
 
 		/* round 3, 7, 11 */
 		round_3_7_11(sharedMemory,r,p,x);
-		
-		
+
+
 		/* round 4, 8, 12 */
 		round_4_8_12(sharedMemory,r,p,x);
 
@@ -272,7 +272,7 @@ void x11_shavite512_gpu_hash_64_alexis(const uint32_t threads, uint64_t *g_hash)
 		x ^= *(uint4*)&r[28];
 		AES_ROUND_NOKEY(sharedMemory, &x);
 		p[ 1] ^= x;
-	
+
 		*(uint4*)&r[ 0] ^= *(uint4*)&r[25];
 		x = p[ 3] ^ *(uint4*)&r[ 0];
 		AES_ROUND_NOKEY(sharedMemory, &x);
@@ -379,7 +379,7 @@ void x11_shavite512_gpu_hash_64_alexis(const uint32_t threads, uint64_t *g_hash)
 
 		/* round 3, 7, 11 */
 		round_3_7_11(sharedMemory,r,p,x);
-		
+
 		/* round 4, 8, 12 */
 		round_4_8_12(sharedMemory,r,p,x);
 

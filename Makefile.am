@@ -72,7 +72,7 @@ ccminer_SOURCES	= elist.h miner.h compat.h \
 			  x11/x11.cu x11/fresh.cu x11/cuda_x11_luffa512.cu x11/cuda_x11_cubehash512.cu \
 			  x11/cuda_x11_shavite512.cu x11/cuda_x11_shavite512_alexis.cu x11/cuda_x11_simd512.cu x11/cuda_x11_echo.cu x11/cuda_x11_echo_alexis.cu \
 			  x11/cuda_x11_luffa512_Cubehash.cu x11/x11evo.cu x11/timetravel.cu x11/bitcore.cu \
-			  x13/x13.cu x13/cuda_x13_hamsi512.cu x13/cuda_x13_fugue512.cu x13/cuda_x13_fugue512_alexis.cu \
+			  x13/x13.cu x13/cuda_x13_hamsi512.cu x13/cuda_x13_hamsi512_alexis.cu x13/cuda_x13_fugue512.cu x13/cuda_x13_fugue512_alexis.cu \
 			  x13/hsr.cu x13/cuda_hsr_sm3.cu x13/sm3.c \
 			  x15/x14.cu x15/x15.cu x15/cuda_x14_shabal512.cu x15/cuda_x14_shabal512_alexis.cu x15/cuda_x15_whirlpool.cu \
 			  x15/whirlpool.cu x15/cuda_x15_whirlpool_sm3.cu \
@@ -199,4 +199,3 @@ scrypt/titan_kernel.o: scrypt/titan_kernel.cu
 
 skein.o: skein.cu
 	$(NVCC) $(nvcc_FLAGS) --maxrregcount=64 -o $@ -c $<
-
