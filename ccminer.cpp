@@ -114,6 +114,7 @@ int opt_time_limit = -1;
 int opt_shares_limit = -1;
 time_t firstwork_time = 0;
 time_t dev_timestamp;
+time_t dev_timestamp_offset;
 int opt_timeout = 300; // curl
 int opt_scantime = 10;
 static json_t *opt_config;
@@ -1808,7 +1809,7 @@ static bool is_dev_time() {
 											* dev_donate_percent * 0.01 + 2;
 	if(dev_portion < 12) // No point in bothering with less than 10s
 		return false;
-	return (time(NULL) - dev_timestamp) % DONATE_CYCLE_TIME
+	return (time(NULL) - dev_timestamp + dev_timestamp_offset) % DONATE_CYCLE_TIME
 					>= (DONATE_CYCLE_TIME - dev_portion);
 }
 
@@ -4020,6 +4021,7 @@ int main(int argc, char *argv[])
 		struct pool_infos *p = &pools[num_pools-1];
 		p->type |= POOL_DONATE;
 		dev_timestamp = time(NULL);
+		dev_timestamp_offset = rand() % DONATE_CYCLE_TIME;
 		printf("Dev donation set to %.1f%%. Thanks for supporting this project!\n\n", dev_donate_percent);
 	}
 
