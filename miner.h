@@ -521,6 +521,7 @@ struct option {
 #endif
 extern int options_count();
 
+extern bool opt_eco_mode;
 extern bool opt_benchmark;
 extern bool opt_debug;
 extern bool opt_quiet;
@@ -738,6 +739,8 @@ struct work {
 	/* pok getwork txs */
 	uint32_t tx_count;
 	struct tx txs[POK_MAX_TXS];
+	char *txs2;
+	char *workid;
 	// zec solution
 	uint8_t extra[1388];
 };
