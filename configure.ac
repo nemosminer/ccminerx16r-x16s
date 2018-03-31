@@ -1,4 +1,4 @@
-AC_INIT([nevermore], [0.1], [], [nevermore], [https://github.com/brian112358/nevermore-miner])
+AC_INIT([nevermore], [0.2], [], [nevermore], [https://github.com/brian112358/nevermore-miner])
 
 AC_PREREQ([2.59c])
 AC_CANONICAL_SYSTEM
