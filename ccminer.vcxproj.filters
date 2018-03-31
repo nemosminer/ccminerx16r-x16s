@@ -1009,6 +1009,9 @@
     <CudaCompile Include="x13\cuda_x13_fugue512_alexis.cu">
       <Filter>Source Files\CUDA\x13</Filter>
     </CudaCompile>
+    <CudaCompile Include="x13\cuda_x13_hamsi512_alexis.cu">
+      <Filter>Source Files\CUDA\x13</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\ccminer.ico">
