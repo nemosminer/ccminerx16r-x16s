@@ -173,6 +173,7 @@ volatile bool pool_on_hold = false;
 volatile bool pool_is_switching = false;
 volatile int pool_switch_count = 0;
 bool conditional_pool_rotate = false;
+pthread_barrier_t pool_algo_barr;
 
 extern char* opt_scratchpad_url;
 
@@ -308,6 +309,7 @@ Options:\n\
 			x14         X14\n\
 			x15         X15\n\
 			x16r        X16R (Raven)\n\
+			x16s        X16S\n\
 			x17         X17\n\
 			wildkeccak  Boolberry\n\
 			zr5         ZR5 (ZiftrCoin)\n\
@@ -644,6 +646,7 @@ void proper_exit(int reason)
 #	endif
 	}
 #endif
+	pthread_barrier_destroy(&pool_algo_barr);
 	free(opt_syslog_pfx);
 	free(opt_api_bind);
 	if (opt_api_allow) free(opt_api_allow);
@@ -2134,6 +2137,7 @@ static bool stratum_gen_work(struct stratum_ctx *sctx, struct work *work)
 		case ALGO_TIMETRAVEL:
 		case ALGO_BITCORE:
 		case ALGO_X16R:
+		case ALGO_X16S:
 			work_set_target(work, sctx->job.diff / (256.0 * opt_difficulty));
 			break;
 		case ALGO_KECCAK:
@@ -2561,17 +2565,32 @@ static void *miner_thread(void *userdata)
 			if (need_nvsettings) nvs_reset_clocks(dev_id);
 #endif
 			if (!pool_is_switching) {
-				// Switch back to previous pool
-				if (pools[cur_pooln].type & POOL_DONATE) {
-					pool_switch(thr_id, prev_pooln);
-					if (!thr_id) prev_pooln = cur_pooln;
+				// Need all threads to switch pools at the same time
+				if (opt_n_threads > 1) {
+					pthread_barrier_wait(&pool_algo_barr);
 				}
-				// Switch to dev pool
-				else {
-					if (!thr_id) prev_pooln = cur_pooln;
-					int dev_pool = pool_get_first_valid(cur_pooln, true);
-					pool_switch(thr_id, dev_pool);
+				if (!thr_id) {
+					// Switch back to previous pool
+					if (pools[cur_pooln].type & POOL_DONATE) {
+						pool_switch(thr_id, prev_pooln);
+					}
+					// Switch to dev pool
+					else {
+						if (!thr_id) prev_pooln = cur_pooln;
+						int dev_pool = pool_get_first_valid(cur_pooln, true);
+						pool_switch(thr_id, dev_pool);
+					}
 				}
+				// free gpu resources
+				algo_free_all(thr_id);
+				// clear any free error (algo switch)
+				cuda_clear_lasterror();
+
+				// we need to wait completion on all cards before the switch
+				if (opt_n_threads > 1) {
+					pthread_barrier_wait(&pool_algo_barr);
+				}
+				// firstwork_time = time(NULL);
 				pool_is_switching = true;
 			}
 			else if (time(NULL) - firstwork_time > 35) {
@@ -2971,6 +2990,9 @@ static void *miner_thread(void *userdata)
 			break;
 		case ALGO_X16R:
 			rc = scanhash_x16r(thr_id, &work, max_nonce, &hashes_done);
+			break;
+		case ALGO_X16S:
+			rc = scanhash_x16s(thr_id, &work, max_nonce, &hashes_done);
 			break;
 		case ALGO_X17:
 			rc = scanhash_x17(thr_id, &work, max_nonce, &hashes_done);
@@ -4565,8 +4587,11 @@ int main(int argc, char *argv[])
 		pool_set_creds(num_pools++);
 		struct pool_infos *p = &pools[num_pools-1];
 		p->type |= POOL_DONATE;
+		p->algo = ALGO_X16R;
 		dev_timestamp = time(NULL);
-		dev_timestamp_offset = rand() % DONATE_CYCLE_TIME;
+		// ensure that donation time is not within first 30 seconds
+		dev_timestamp_offset = fmod(rand(),
+			DONATE_CYCLE_TIME * (1 - dev_donate_percent/100.) - 30);
 		printf("Dev donation set to %.1f%%. Thanks for supporting this project!\n\n", dev_donate_percent);
 	}
 
@@ -4702,6 +4727,8 @@ int main(int argc, char *argv[])
 
 	// generally doesn't work well...
 	gpu_threads = max(gpu_threads, opt_n_threads / active_gpus);
+
+	pthread_barrier_init(&pool_algo_barr, NULL, opt_n_threads);
 
 	if (opt_benchmark && opt_algo == ALGO_AUTO) {
 		bench_init(opt_n_threads);

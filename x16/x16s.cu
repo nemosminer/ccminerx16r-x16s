@@ -1,7 +1,8 @@
 /**
- * X16R algorithm (X16 with Randomized chain order)
+ * X16S algorithm (X16 with Shuffled chain order)
  *
- * tpruvot 2018 - GPL code
+ * Adapted from tpruvot X16R kernel.
+ * brianmct 2018 - GPL code
  */
 
 #include <stdio.h>
@@ -31,7 +32,7 @@ extern "C" {
 
 #include "miner.h"
 #include "cuda_helper.h"
-#include "cuda_x16r.h"
+#include "cuda_x16.h"
 
 static uint32_t *d_hash[MAX_GPUS];
 
@@ -81,26 +82,26 @@ static __thread char hashOrder[HASH_FUNC_COUNT + 1] = { 0 };
 
 static void getAlgoString(const uint32_t* prevblock, char *output)
 {
-	char *sptr = output;
 	uint8_t* data = (uint8_t*)prevblock;
 
-	for (uint8_t j = 0; j < HASH_FUNC_COUNT; j++) {
-		uint8_t b = (15 - j) >> 1; // 16 ascii hex chars, reversed
-		uint8_t algoDigit = (j & 1) ? data[b] & 0xF : data[b] >> 4;
-		if (algoDigit >= 10)
-			sprintf(sptr, "%c", 'A' + (algoDigit - 10));
-		else
-			sprintf(sptr, "%u", (uint32_t) algoDigit);
-		sptr++;
+	strcpy(output, "0123456789ABCDEF");
+
+	for(int i = 0; i < 16; i++){
+		uint8_t b = (15 - i) >> 1; // 16 ascii hex chars, reversed
+		uint8_t algoDigit = (i & 1) ? data[b] & 0xF : data[b] >> 4;
+		int offset = algoDigit;
+		// insert the nth character at the front
+		char oldVal = output[offset];
+		for(int j=offset; j-->0;)
+			output[j+1] = output[j];
+		output[0] = oldVal;
 	}
-	*sptr = '\0';
 }
 
-// X16R CPU Hash (Validation)
-extern "C" void x16r_hash(void *output, const void *input)
+// X16S CPU Hash (Validation)
+extern "C" void x16s_hash(void *output, const void *input)
 {
 	unsigned char _ALIGN(64) hash[128];
-
 	sph_blake512_context ctx_blake;
 	sph_bmw512_context ctx_bmw;
 	sph_groestl512_context ctx_groestl;
@@ -217,36 +218,23 @@ extern "C" void x16r_hash(void *output, const void *input)
 	memcpy(output, hash, 32);
 }
 
-void whirlpool_midstate(void *state, const void *input)
-{
-	sph_whirlpool_context ctx;
-
-	sph_whirlpool_init(&ctx);
-	sph_whirlpool(&ctx, input, 64);
-
-	memcpy(state, ctx.state, 64);
-}
-
 static bool init[MAX_GPUS] = { 0 };
 
 //#define _DEBUG
-#define _DEBUG_PREFIX "x16r-"
+#define _DEBUG_PREFIX "x16s-"
 #include "cuda_debug.cuh"
 
-//static int algo80_tests[HASH_FUNC_COUNT] = { 0 };
-//static int algo64_tests[HASH_FUNC_COUNT] = { 0 };
 static int algo80_fails[HASH_FUNC_COUNT] = { 0 };
 
-extern "C" int scanhash_x16r(int thr_id, struct work* work, uint32_t max_nonce, unsigned long *hashes_done)
+extern "C" int scanhash_x16s(int thr_id, struct work* work, uint32_t max_nonce, unsigned long *hashes_done)
 {
 	uint32_t *pdata = work->data;
 	uint32_t *ptarget = work->target;
 	const uint32_t first_nonce = pdata[19];
 	const int dev_id = device_map[thr_id];
 	int intensity = (device_sm[dev_id] > 500 && !is_windows()) ? 20 : 19;
-	if (strstr(device_name[dev_id], "GTX 1080")) intensity = 20;
+	if (strstr(device_name[dev_id], "GTX 1080")) intensity = 19;
 	uint32_t throughput = cuda_default_throughput(thr_id, 1U << intensity);
-	//if (init[thr_id]) throughput = min(throughput, max_nonce - first_nonce);
 
 	if (!init[thr_id])
 	{
@@ -518,7 +506,7 @@ extern "C" int scanhash_x16r(int thr_id, struct work* work, uint32_t max_nonce, 
 #ifdef _DEBUG
 		uint32_t _ALIGN(64) dhash[8];
 		be32enc(&endiandata[19], pdata[19]);
-		x16r_hash(dhash, endiandata);
+		x16s_hash(dhash, endiandata);
 		applog_hash(dhash);
 		return -1;
 #endif
@@ -527,7 +515,7 @@ extern "C" int scanhash_x16r(int thr_id, struct work* work, uint32_t max_nonce, 
 			const uint32_t Htarg = ptarget[7];
 			uint32_t _ALIGN(64) vhash[8];
 			be32enc(&endiandata[19], work->nonces[0]);
-			x16r_hash(vhash, endiandata);
+			x16s_hash(vhash, endiandata);
 
 			if (vhash[7] <= Htarg && fulltest(vhash, ptarget)) {
 				work->valid_nonces = 1;
@@ -535,32 +523,13 @@ extern "C" int scanhash_x16r(int thr_id, struct work* work, uint32_t max_nonce, 
 				work_set_target_ratio(work, vhash);
 				if (work->nonces[1] != 0) {
 					be32enc(&endiandata[19], work->nonces[1]);
-					x16r_hash(vhash, endiandata);
+					x16s_hash(vhash, endiandata);
 					bn_set_target_ratio(work, vhash, 1);
 					work->valid_nonces++;
 					pdata[19] = max(work->nonces[0], work->nonces[1]) + 1;
 				} else {
 					pdata[19] = work->nonces[0] + 1; // cursor
 				}
-#if 0
-				gpulog(LOG_INFO, thr_id, "hash found with %s 80!", algo_strings[algo80]);
-
-				algo80_tests[algo80] += work->valid_nonces;
-				char oks64[128] = { 0 };
-				char oks80[128] = { 0 };
-				char fails[128] = { 0 };
-				for (int a = 0; a < HASH_FUNC_COUNT; a++) {
-					const char elem = hashOrder[a];
-					const uint8_t algo64 = elem >= 'A' ? elem - 'A' + 10 : elem - '0';
-					if (a > 0) algo64_tests[algo64] += work->valid_nonces;
-					sprintf(&oks64[strlen(oks64)], "|%X:%2d", a, algo64_tests[a] < 100 ? algo64_tests[a] : 99);
-					sprintf(&oks80[strlen(oks80)], "|%X:%2d", a, algo80_tests[a] < 100 ? algo80_tests[a] : 99);
-					sprintf(&fails[strlen(fails)], "|%X:%2d", a, algo80_fails[a] < 100 ? algo80_fails[a] : 99);
-				}
-				applog(LOG_INFO, "K64: %s", oks64);
-				applog(LOG_INFO, "K80: %s", oks80);
-				applog(LOG_ERR,  "F80: %s", fails);
-#endif
 				return work->valid_nonces;
 			}
 			else if (vhash[7] > Htarg) {
@@ -593,7 +562,7 @@ extern "C" int scanhash_x16r(int thr_id, struct work* work, uint32_t max_nonce, 
 }
 
 // cleanup
-extern "C" void free_x16r(int thr_id)
+extern "C" void free_x16s(int thr_id)
 {
 	if (!init[thr_id])
 		return;
@@ -605,7 +574,6 @@ extern "C" void free_x16r(int thr_id)
 	quark_blake512_cpu_free(thr_id);
 	quark_groestl512_cpu_free(thr_id);
 	x11_simd512_cpu_free(thr_id);
-	x13_fugue512_cpu_free(thr_id);
 	x16_fugue512_cpu_free(thr_id); // to merge with x13_fugue512 ?
 	x15_whirlpool_cpu_free(thr_id);
 

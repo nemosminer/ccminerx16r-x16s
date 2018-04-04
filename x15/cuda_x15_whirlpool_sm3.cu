@@ -38,6 +38,7 @@
 #include <cuda_helper.h>
 #include <miner.h>
 #include "cuda_whirlpool_tables.cuh"
+#include "../sph/sph_whirlpool.h"
 
 extern __device__ __device_builtin__ void __threadfence_block(void);
 
@@ -2385,7 +2386,16 @@ void x16_whirlpool512_init(int thr_id, uint32_t threads)
 #endif
 }
 
-extern void whirlpool_midstate(void *state, const void *input);
+__host__
+void whirlpool_midstate(void *state, const void *input)
+{
+	sph_whirlpool_context ctx;
+
+	sph_whirlpool_init(&ctx);
+	sph_whirlpool(&ctx, input, 64);
+
+	memcpy(state, ctx.state, 64);
+}
 
 __host__
 void x16_whirlpool512_setBlock_80(void *pdata)
