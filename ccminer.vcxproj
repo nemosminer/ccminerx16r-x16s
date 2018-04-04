@@ -443,11 +443,12 @@
     <CudaCompile Include="x13\cuda_x13_hamsi512_alexis.cu" />
     <CudaCompile Include="x15\cuda_x14_shabal512_alexis.cu" />
     <CudaCompile Include="x15\cuda_x15_whirlpool_sm3.cu" />
-    <CudaCompile Include="x16r\x16r.cu" />
-    <CudaCompile Include="x16r\cuda_x16_echo512.cu" />
-    <CudaCompile Include="x16r\cuda_x16_fugue512.cu" />
-    <CudaCompile Include="x16r\cuda_x16_shabal512.cu" />
-    <CudaCompile Include="x16r\cuda_x16_simd512_80.cu" />
+    <CudaCompile Include="x16\cuda_x16_echo512.cu" />
+    <CudaCompile Include="x16\cuda_x16_fugue512.cu" />
+    <CudaCompile Include="x16\cuda_x16_shabal512.cu" />
+    <CudaCompile Include="x16\cuda_x16_simd512_80.cu" />
+    <CudaCompile Include="x16\x16r.cu" />
+    <CudaCompile Include="x16\x16s.cu" />
     <CudaCompile Include="zr5.cu" />
     <CudaCompile Include="heavy\cuda_blake512.cu">
     </CudaCompile>

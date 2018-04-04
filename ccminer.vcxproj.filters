@@ -58,9 +58,6 @@
     <Filter Include="Source Files\CUDA\x15">
       <UniqueIdentifier>{a2403c22-6777-46ab-a55a-3fcc7386c974}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\CUDA\x16r">
-      <UniqueIdentifier>{55dfae6a-66ba-43e2-8ceb-98ee70cbdf16}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\CUDA\x17">
       <UniqueIdentifier>{85dfae6a-66ca-4332-8cec-98ee70cbdf2f}</UniqueIdentifier>
     </Filter>
@@ -114,6 +111,9 @@
     </Filter>
     <Filter Include="Source Files\CUDA\tribus">
       <UniqueIdentifier>{1e548d79-c217-4203-989a-a592fe2b2de3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\CUDA\x16">
+      <UniqueIdentifier>{f9e9bb1f-9dfa-4caa-89ae-2d25fc8d2099}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -979,21 +979,6 @@
     <CudaCompile Include="x15\cuda_x15_whirlpool_sm3.cu">
       <Filter>Source Files\CUDA\x15</Filter>
     </CudaCompile>
-    <CudaCompile Include="x16r\cuda_x16_echo512.cu">
-      <Filter>Source Files\CUDA\x16r</Filter>
-    </CudaCompile>
-    <CudaCompile Include="x16r\cuda_x16_fugue512.cu">
-      <Filter>Source Files\CUDA\x16r</Filter>
-    </CudaCompile>
-    <CudaCompile Include="x16r\cuda_x16_shabal512.cu">
-      <Filter>Source Files\CUDA\x16r</Filter>
-    </CudaCompile>
-    <CudaCompile Include="x16r\cuda_x16_simd512_80.cu">
-      <Filter>Source Files\CUDA\x16r</Filter>
-    </CudaCompile>
-    <CudaCompile Include="x16r\x16r.cu">
-      <Filter>Source Files\CUDA\x16r</Filter>
-    </CudaCompile>
     <CudaCompile Include="qubit\qubit_luffa512_alexis.cu">
       <Filter>Source Files\CUDA\qubit</Filter>
     </CudaCompile>
@@ -1011,6 +996,24 @@
     </CudaCompile>
     <CudaCompile Include="x13\cuda_x13_hamsi512_alexis.cu">
       <Filter>Source Files\CUDA\x13</Filter>
+    </CudaCompile>
+    <CudaCompile Include="x16\cuda_x16_echo512.cu">
+      <Filter>Source Files\CUDA\x16</Filter>
+    </CudaCompile>
+    <CudaCompile Include="x16\cuda_x16_fugue512.cu">
+      <Filter>Source Files\CUDA\x16</Filter>
+    </CudaCompile>
+    <CudaCompile Include="x16\cuda_x16_shabal512.cu">
+      <Filter>Source Files\CUDA\x16</Filter>
+    </CudaCompile>
+    <CudaCompile Include="x16\cuda_x16_simd512_80.cu">
+      <Filter>Source Files\CUDA\x16</Filter>
+    </CudaCompile>
+    <CudaCompile Include="x16\x16r.cu">
+      <Filter>Source Files\CUDA\x16</Filter>
+    </CudaCompile>
+    <CudaCompile Include="x16\x16s.cu">
+      <Filter>Source Files\CUDA\x16</Filter>
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>
