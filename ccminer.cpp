@@ -646,7 +646,7 @@ void proper_exit(int reason)
 #	endif
 	}
 #endif
-	pthread_barrier_destroy(&pool_algo_barr);
+	// pthread_barrier_destroy(&pool_algo_barr);
 	free(opt_syslog_pfx);
 	free(opt_api_bind);
 	if (opt_api_allow) free(opt_api_allow);
