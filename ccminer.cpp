@@ -3089,11 +3089,24 @@ static void *miner_thread(void *userdata)
 		if (opt_debug && check_dups && opt_algo != ALGO_DECRED && opt_algo != ALGO_EQUIHASH && opt_algo != ALGO_SIA)
 			hashlog_remember_scan_range(&work);
 
-		/* output */
-		if (!opt_quiet && loopcnt > 1 && (time(NULL) - tm_rate_log) > opt_maxlograte) {
-			format_hashrate(thr_hashrates[thr_id], s);
-			gpulog(LOG_INFO, thr_id, "%s, %s", device_name[dev_id], s);
-			tm_rate_log = time(NULL);
+		if (!opt_quiet && loopcnt > 1 && (time(NULL) - tm_rate_log) > opt_maxlograte)
+		{
+				format_hashrate(thr_hashrates[thr_id], s);
+				char output[4096];
+				char *peker = &output[0];
+				int now = 0;
+				for (int i = 0; i < opt_n_threads; i++)
+				{
+					format_hashrate(thr_hashrates[i], s);
+					int pos = sprintf(peker, "GPU%d %s ", device_map[i], s);
+					now += pos;
+					peker = &output[now];
+				}
+				if (thr_id == 0)
+				{
+					applog(LOG_BLUE, output);
+				}
+				tm_rate_log = time(NULL);
 		}
 
 		/* ignore first loop hashrate */
