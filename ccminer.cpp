@@ -57,8 +57,8 @@
 BOOL WINAPI ConsoleHandler(DWORD);
 #endif
 
-#define PROGRAM_NAME		"nevermore"
-#define LP_SCANTIME		60
+#define PROGRAM_NAME		"ccminer"
+#define LP_SCANTIME		10
 #define HEAVYCOIN_BLKHDR_SZ		84
 #define MNR_BLKHDR_SZ 80
 
@@ -219,7 +219,7 @@ double opt_resume_temp = 0.;
 double opt_resume_diff = 0.;
 double opt_resume_rate = -1.;
 
-int opt_statsavg = 300;
+int opt_statsavg = 10;
 
 bool opt_eco_mode = false;
 bool allow_getwork = true;
