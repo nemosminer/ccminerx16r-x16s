@@ -4527,7 +4527,7 @@ int main(int argc, char *argv[])
 			CUDART_VERSION/1000, (CUDART_VERSION % 1000)/10, arch);
 		printf("  Originally based on Christian Buchner and Christian H. project\n");
 		printf("  Include some kernels from alexis78, djm34, djEzo, tsiv and krnlx.\n\n");
-		       printf("			ccminerx16rx16s-v0.5 \n\n");
+		printf("			x16rx16s-v0.5 \n\n");
 	}
 
 	rpc_user = strdup("");
