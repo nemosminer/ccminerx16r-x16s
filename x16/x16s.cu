@@ -264,7 +264,7 @@ extern "C" int scanhash_x16s(int thr_id, struct work* work, uint32_t max_nonce, 
 		CUDA_CALL_OR_RET_X(cudaMalloc(&d_hash[thr_id], (size_t) 64 * throughput), 0);
 
 		cuda_check_cpu_init(thr_id, throughput);
-
+                sleep(2);
 		init[thr_id] = true;
 	}
 
