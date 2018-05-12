@@ -231,8 +231,8 @@ extern "C" int scanhash_x16r(int thr_id, struct work* work, uint32_t max_nonce, 
 	uint32_t *ptarget = work->target;
 	const uint32_t first_nonce = pdata[19];
 	const int dev_id = device_map[thr_id];
-	int intensity = (device_sm[dev_id] > 500 && !is_windows()) ? 20 : 19;
-	if (strstr(device_name[dev_id], "GTX 1080")) intensity = 19;
+	int intensity = (device_sm[dev_id] > 500 ) ? 20 : 19;
+	if (strstr(device_name[dev_id], "GTX 1080")) intensity = 21;
 	uint32_t throughput = cuda_default_throughput(thr_id, 1U << intensity);
 
 	if (!init[thr_id])
