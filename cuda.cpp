@@ -122,8 +122,8 @@ void cuda_print_devices()
 void cuda_shutdown()
 {
 	// require gpu init first
-	//if (thr_info != NULL)
-	//	cudaDeviceSynchronize();
+	if (thr_info != NULL)
+	cudaDeviceSynchronize();
 	cudaDeviceReset();
 }
 
@@ -153,11 +153,11 @@ int cuda_finddevice(char *name)
 {
 	int num = cuda_num_devices();
 	int match = 0;
-	for (int i=0; i < num; ++i)
+	for (int i = 0; i < num; ++i)
 	{
 		cudaDeviceProp props;
 		if (cudaGetDeviceProperties(&props, i) == cudaSuccess)
-			if (substringsearch(props.name, name, match)) return i;
+		if (substringsearch(props.name, name, match)) return i;
 	}
 	return -1;
 }
@@ -167,7 +167,7 @@ uint32_t cuda_default_throughput(int thr_id, uint32_t defcount)
 {
 	//int dev_id = device_map[thr_id % MAX_GPUS];
 	uint32_t throughput = gpus_intensity[thr_id] ? gpus_intensity[thr_id] : defcount;
-	if (gpu_threads > 1 && throughput == defcount) throughput /= (gpu_threads-1);
+	if (gpu_threads > 1 && throughput == defcount) throughput /= (gpu_threads - 1);
 	if (api_thr_id != -1) api_set_throughput(thr_id, throughput);
 	//gpulog(LOG_INFO, thr_id, "throughput %u", throughput);
 	return throughput;
@@ -181,11 +181,12 @@ double throughput2intensity(uint32_t throughput)
 	uint8_t i = 0;
 	while (ws > 1 && i++ < 32)
 		ws = ws >> 1;
-	intensity = (double) i;
+	intensity = (double)i;
 	if (i && ((1U << i) < throughput)) {
-		intensity += ((double) (throughput-(1U << i)) / (1U << i));
+		intensity += ((double)(throughput - (1U << i)) / (1U << i));
 	}
 	return intensity;
+
 }
 
 // if we use 2 threads on the same gpu, we need to reinit the threads
@@ -195,21 +196,22 @@ void cuda_reset_device(int thr_id, bool *init)
 	cudaSetDevice(dev_id);
 	if (init != NULL) {
 		// with init array, its meant to be used in algo's scan code...
-		for (int i=0; i < MAX_GPUS; i++) {
+		for (int i = 0; i < MAX_GPUS; i++) {
 			if (device_map[i] == dev_id) {
 				init[i] = false;
 			}
 		}
 		// force exit from algo's scan loops/function
+		cudaDeviceReset();
 		restart_threads();
-		cudaDeviceSynchronize();
-		while (cudaStreamQuery(NULL) == cudaErrorNotReady)
-			usleep(1000);
+		while (cudaStreamQuery(NULL) == cudaErrorNotReady);
+		usleep(10);
 	}
-	cudaDeviceReset();
-	if (opt_cudaschedule >= 0) {
+
+	if (opt_cudaschedule >= 1) {
 		cudaSetDeviceFlags((unsigned)(opt_cudaschedule & cudaDeviceScheduleMask));
-	} else {
+	}
+	else {
 		cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
 	}
 	cudaDeviceSynchronize();
@@ -270,6 +272,10 @@ int cuda_gpu_info(struct cgpu_info *gpu)
 
 // Zeitsynchronisations-Routine von cudaminer mit CPU sleep
 // Note: if you disable all of these calls, CPU usage will hit 100%
+
+//THE1 Tried Double Values for tsumarray 8 is the best, tsleep best at 2.00, a & b values 0.05
+// Tried 2e6 for usleep made it half speed - 1e5 gave slight improvement
+
 typedef struct { double value[8]; } tsumarray;
 cudaError_t MyStreamSynchronize(cudaStream_t stream, int situation, int thr_id)
 {
@@ -280,14 +286,14 @@ cudaError_t MyStreamSynchronize(cudaStream_t stream, int situation, int thr_id)
 	{
 		static std::map<int, tsumarray> tsum;
 
-		double a = 0.95, b = 0.05;
-		if (tsum.find(situation) == tsum.end()) { a = 0.5; b = 0.5; } // faster initial convergence
+		double a = 0.05, b = 0.05;
+		if (tsum.find(situation) == tsum.end()) { a = 0.5; b = 0.05; } // faster initial convergence
 
-		double tsync = 0.0;
-		double tsleep = 0.95 * tsum[situation].value[thr_id];
+		double tsync = 0.00;
+		double tsleep = 2.00 * tsum[situation].value[thr_id];
 		if (cudaStreamQuery(stream) == cudaErrorNotReady)
 		{
-			usleep((useconds_t)(1e6*tsleep));
+			usleep((useconds_t)(1e5*tsleep));
 			struct timeval tv_start, tv_end;
 			gettimeofday(&tv_start, NULL);
 			result = cudaStreamSynchronize(stream);
