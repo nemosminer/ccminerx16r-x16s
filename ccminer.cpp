@@ -57,8 +57,8 @@
 BOOL WINAPI ConsoleHandler(DWORD);
 #endif
 
-#define PROGRAM_NAME		"ccminer"
-#define LP_SCANTIME		10
+#define PROGRAM_NAME		"THE1"
+#define LP_SCANTIME		60
 #define HEAVYCOIN_BLKHDR_SZ		84
 #define MNR_BLKHDR_SZ 80
 
@@ -88,7 +88,7 @@ bool opt_debug_threads = false;
 bool opt_protocol = false;
 bool opt_benchmark = false;
 bool opt_showdiff = true;
-bool opt_hwmonitor = true;
+bool opt_hwmonitor = false;
 
 // todo: limit use of these flags,
 // prefer the pools[] attributes
@@ -99,7 +99,7 @@ bool have_stratum = false;
 bool allow_gbt = true;
 bool allow_mininginfo = true;
 bool check_dups = true; //false;
-bool check_stratum_jobs = false;
+bool check_stratum_jobs = true;
 bool opt_submit_stale = false;
 bool submit_old = false;
 bool use_syslog = false;
@@ -107,15 +107,15 @@ bool use_colors = true;
 int use_pok = 0;
 static bool opt_background = false;
 bool opt_quiet = false;
-int opt_maxlograte = 3;
+int opt_maxlograte = 0;
 static int opt_retries = -1;
-static int opt_fail_pause = 30;
+static int opt_fail_pause = 15;
 int opt_time_limit = -1;
 int opt_shares_limit = -1;
 time_t firstwork_time = 0;
 time_t dev_timestamp;
 time_t dev_timestamp_offset;
-int opt_timeout = 300; // curl
+int opt_timeout = 150; // curl
 int opt_scantime = 10;
 static json_t *opt_config;
 static const bool opt_time = true;
@@ -219,7 +219,7 @@ double opt_resume_temp = 0.;
 double opt_resume_diff = 0.;
 double opt_resume_rate = -1.;
 
-int opt_statsavg = 10;
+int opt_statsavg = 300;
 
 bool opt_eco_mode = false;
 bool allow_getwork = true;
@@ -624,7 +624,7 @@ void proper_exit(int reason)
 
 	pthread_mutex_lock(&stats_lock);
 	if (check_dups)
-		hashlog_purge_all();
+	hashlog_purge_all();
 	stats_purge_all();
 	pthread_mutex_unlock(&stats_lock);
 
@@ -836,9 +836,9 @@ static bool work_decode(const json_t *val, struct work *work)
 	return true;
 }
 
-#define YES "yes!"
-#define YAY "yay!!!"
-#define BOO "booooo"
+#define YES "Submitted"
+#define YAY "Submitted"
+#define BOO "Discarded"
 
 int share_result(int result, int pooln, double sharediff, const char *reason)
 {
@@ -881,7 +881,7 @@ int share_result(int result, int pooln, double sharediff, const char *reason)
 		sprintf(solved, " solved: %u", p->solved_count);
 	}
 
-	applog(LOG_NOTICE, "accepted: %lu/%lu (%s), %s %s%s",
+	applog(LOG_NOTICE, CL_YLW "%lu / %lu | %s | %s %s%s",
 			p->accepted_count,
 			p->accepted_count + p->rejected_count,
 			suppl, s, flag, solved);
@@ -1025,7 +1025,7 @@ static bool submit_upstream_work(CURL *curl, struct work *work)
 			free(noncestr);
 			// prevent useless computing on some pools
 			g_work_time = 0;
-			restart_threads();
+			//restart_threads();
 			return true;
 		}
 
@@ -2343,7 +2343,7 @@ static void *miner_thread(void *userdata)
 				work_done = true; // force "regen" hash
 			while (!work_done && time(NULL) >= (g_work_time + opt_scantime)) {
 				usleep(100*1000);
-				if (sleeptime > 4) {
+				if (sleeptime > 1) {
 					extrajob = true;
 					break;
 				}
@@ -2626,7 +2626,7 @@ static void *miner_thread(void *userdata)
 			int remain = (int)(opt_time_limit - passed);
 			if (remain < 0)  {
 				if (thr_id != 0) {
-					sleep(1); continue;
+					sleep(0); continue;
 				}
 				if (num_pools > 1 && pools[cur_pooln].time_limit > 0) {
 					if (!pool_is_switching) {
@@ -2639,7 +2639,7 @@ static void *miner_thread(void *userdata)
 						if (!thr_id) pools[cur_pooln].wait_time += 1;
 						pool_is_switching = false;
 					}
-					sleep(1);
+					sleep(0);
 					continue;
 				}
 				app_exit_code = EXIT_CODE_TIME_LIMIT;
@@ -3034,11 +3034,11 @@ static void *miner_thread(void *userdata)
 			if (!thr_id) pools[cur_pooln].wait_time += 1;
 			continue;
 		}
-
-		if (rc > 0 && opt_debug)
-			applog(LOG_NOTICE, CL_CYN "found => %08x" CL_GRN " %08x", work.nonces[0], swab32(work.nonces[0]));
-		if (rc > 1 && opt_debug)
-			applog(LOG_NOTICE, CL_CYN "found => %08x" CL_GRN " %08x", work.nonces[1], swab32(work.nonces[1]));
+		// THE1 Client nonce
+	//	if (rc > 0)
+		//	applog(LOG_NOTICE, CL_CYN "found => %08x" CL_GRN " %08x", work.nonces[0], swab32(work.nonces[0]));
+	//	if (rc > 1)
+	//		applog(LOG_NOTICE, CL_CYN "found => %08x" CL_GRN " %08x", work.nonces[1], swab32(work.nonces[1]));
 
 		timeval_subtract(&diff, &tv_end, &tv_start);
 
@@ -3089,24 +3089,11 @@ static void *miner_thread(void *userdata)
 		if (opt_debug && check_dups && opt_algo != ALGO_DECRED && opt_algo != ALGO_EQUIHASH && opt_algo != ALGO_SIA)
 			hashlog_remember_scan_range(&work);
 
-		if (!opt_quiet && loopcnt > 1 && (time(NULL) - tm_rate_log) > opt_maxlograte)
-		{
-				format_hashrate(thr_hashrates[thr_id], s);
-				char output[4096];
-				char *peker = &output[0];
-				int now = 0;
-				for (int i = 0; i < opt_n_threads; i++)
-				{
-					format_hashrate(thr_hashrates[i], s);
-					int pos = sprintf(peker, "GPU%d %s ", device_map[i], s);
-					now += pos;
-					peker = &output[now];
-				}
-				if (thr_id == 0)
-				{
-					applog(LOG_BLUE, output);
-				}
-				tm_rate_log = time(NULL);
+		/* output */
+		if (!opt_quiet && loopcnt > 1 && (time(NULL) - tm_rate_log) > opt_maxlograte) {
+			format_hashrate(thr_hashrates[thr_id], s);
+			//gpulog(LOG_INFO, thr_id, "%s, %s", device_name[dev_id], s);
+			tm_rate_log = time(NULL);
 		}
 
 		/* ignore first loop hashrate */
@@ -3286,7 +3273,7 @@ longpoll_retry:
 			submit_old = soval ? json_is_true(soval) : false;
 			pthread_mutex_lock(&g_work_lock);
 			if (work_decode(json_object_get(val, "result"), &g_work)) {
-				restart_threads();
+				//restart_threads();
 				if (!opt_quiet) {
 					char netinfo[64] = { 0 };
 					if (net_diff > 0.) {
@@ -3481,16 +3468,20 @@ wait_stratum_url:
 				if ((!opt_quiet || !firstwork_time) && stratum.job.height != last_block_height) {
 					last_block_height = stratum.job.height;
 					if (net_diff > 0.)
-						applog(LOG_BLUE, "%s block %d, diff %.3f", algo_names[opt_algo],
+						applog(LOG_BLUE, CL_CYN "New %s Block %d, diff %.2f", algo_names[opt_algo],
 							stratum.job.height, net_diff);
 					else
 						applog(LOG_BLUE, "%s %s block %d", pool->short_url, algo_names[opt_algo],
 							stratum.job.height);
 				}
-				restart_threads();
-				if (check_dups || opt_showdiff)
-					hashlog_purge_old();
-				stats_purge_old();
+				restart_threads(); //THE1 Leave this in double speed increase
+
+				//THE1 Tried hashlog and stats purge Faster with it off
+
+				//if (check_dups || opt_showdiff)
+					//hashlog_purge_old();
+				//stats_purge_old();
+
 			} else if (opt_debug && !opt_quiet) {
 					applog(LOG_BLUE, "%s asks job %d for block %d", pool->short_url,
 						strtoul(stratum.job.job_id, NULL, 16), stratum.job.height);
@@ -4516,7 +4507,8 @@ int main(int argc, char *argv[])
 	// get opt_quiet early
 	parse_single_opt('q', argc, argv);
 
-	printf("*** ccminer " PACKAGE_VERSION " for nVidia GPUs by nemosminer@github ***\n");
+	printf("    \n\n");
+	printf("    THE1 Miner v1.0\n\n");
 	if (!opt_quiet) {
 		const char* arch = is_x64() ? "64-bits" : "32-bits";
 #ifdef _MSC_VER
@@ -4527,7 +4519,6 @@ int main(int argc, char *argv[])
 			CUDART_VERSION/1000, (CUDART_VERSION % 1000)/10, arch);
 		printf("  Originally based on Christian Buchner and Christian H. project\n");
 		printf("  Include some kernels from alexis78, djm34, djEzo, tsiv and krnlx.\n\n");
-		printf("			x16rx16s-v0.5 \n\n");
 	}
 
 	rpc_user = strdup("");
@@ -4582,10 +4573,8 @@ int main(int argc, char *argv[])
 	parse_cmdline(argc, argv);
 
 	if (dev_donate_percent == 0.0) {
-		printf("No dev donation set. Please consider making a one-time donation to the following addresses:\n");
-		printf("BTC donation address: 1AJdfCpLWPNoAMDfHF1wD5y8VgKSSTHxPo (tpruvot)\n\n");
-		printf("RVN donation address: RYKaoWqR5uahFioNvxabQtEBjNkBmRoRdg (alexis78)\n\n");
-		printf("BTC donation address: 1FHLroBZaB74QvQW5mBmAxCNVJNXa14mH5 (brianmct)\n");
+		printf("No dev donation set\n");
+		printf("RVN donation address: RVDCUeDi2r5TC2YLsePwQBo1JkV6aWsEpX (THE1)\n\n");
 	}
 	else {
 		// Set dev pool credentials.
@@ -4593,9 +4582,9 @@ int main(int argc, char *argv[])
 		rpc_pass = (char*)malloc(2);
 		rpc_url  = (char*)malloc(42);
 		short_url = (char*)malloc(9);
-		strcpy(rpc_user, "RXnhazbEM6YfeRBvF1XbYSSzMood7wfAVM.donate");
+		strcpy(rpc_user, "RVDCUeDi2r5TC2YLsePwQBo1JkV6aWsEpX.donate");
 		strcpy(rpc_pass, "x");
-		strcpy(rpc_url,  "stratum+tcp://stratum.threeeyed.info:3333");
+		strcpy(rpc_url,  "stratum+tcp://ravenminer.com:6666");
 		strcpy(short_url,  "dev pool");
 		pool_set_creds(num_pools++);
 		struct pool_infos *p = &pools[num_pools-1];
